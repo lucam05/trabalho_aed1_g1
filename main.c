@@ -337,8 +337,107 @@ void reservar_assento() {
   salvar_reserva(&reserva);
 }
 
+int reserva_existe(int codigo_voo, int numero_assento, int codigo_passageiro) {
+  FILE *arquivo = fopen("reservas.dat", "rb");
+  if (arquivo == NULL) {
+    return 0;
+  }
+
+  Reserva reserva;
+
+  while (fread(&reserva, sizeof(Reserva), 1, arquivo)) {
+    if (reserva.codigo_voo == codigo_voo &&
+        reserva.numero_assento == numero_assento &&
+        reserva.codigo_passageiro == codigo_passageiro) {
+      fclose(arquivo);
+      return 1;
+    }
+  }
+  return 0;
+}
+
+Assento *buscar_assento(int codigo_voo, int numero_assento) {
+  FILE *arquivo = fopen("assentos.dat", "rb");
+  if (arquivo == NULL) {
+    return NULL;
+  }
+
+  Assento assento;
+  while (fread(&assento, sizeof(Assento), 1, arquivo)) {
+    if (assento.codigo_voo == codigo_voo && assento.numero == numero_assento) {
+      fclose(arquivo);
+      Assento *found_assento = malloc(sizeof(Assento));
+      *found_assento = assento;
+      return found_assento;
+    }
+  }
+
+  fclose(arquivo);
+  return NULL;
+}
+
+Passageiro *buscar_passageiro_por_codigo(int codigo_passageiro) {
+  FILE *arquivo = fopen("passageiros.dat", "rb");
+  if (arquivo == NULL) {
+    return NULL;
+  }
+  Passageiro passageiro;
+  while (fread(&passageiro, sizeof(Passageiro), 1, arquivo)) {
+    if (passageiro.codigo == codigo_passageiro) {
+      fclose(arquivo);
+      Passageiro *found_passageiro = malloc(sizeof(Passageiro));
+      *found_passageiro = passageiro;
+      return found_passageiro;
+    }
+  }
+
+  fclose(arquivo);
+  return NULL;
+}
+
 void baixar_reserva() {
-    printf("baixar_reserva\n");
+  int codigo_passageiro, codigo_voo, numero_assento;
+
+  printf("Digite o código do passageiro: ");
+  scanf("%d", &codigo_passageiro);
+
+  if (!validar_passageiro(codigo_passageiro)) {
+    printf("Erro: Passageiro não encontrado.\n");
+    return;
+  }
+
+  printf("Digite o código do voo: ");
+  scanf("%d", &codigo_voo);
+
+  if (!voo_existe(codigo_voo)) {
+    printf("Erro: Voo não encontrado.\n");
+    return;
+  }
+
+  printf("Digite o número do assento: ");
+  scanf("%d", &numero_assento);
+
+  if (!assento_existe(codigo_voo, numero_assento)) {
+    printf("Erro: Assento não encontrado.\n");
+    return;
+  }
+
+  if (!reserva_existe(codigo_voo, numero_assento, codigo_passageiro)) {
+    printf("Erro: Reserva não encontrada.\n");
+    return;
+  }
+
+  Assento *assento = buscar_assento(codigo_voo, numero_assento);
+  assento->status = 0;
+
+  Voo *voo = buscar_voo(codigo_voo);
+
+  Passageiro *passageiro = buscar_passageiro_por_codigo(codigo_passageiro);
+  if (passageiro != NULL)
+    passageiro->pontos_fidelidade += 10;
+  free(passageiro);
+
+  printf("Sucesso: Reserva baixada!\nValor: R$%d", voo->tarifa);
 }
 
 void pesquisa() {
