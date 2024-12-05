@@ -17,6 +17,56 @@ typedef struct {
   int experiencia;
 } Tripulacao;
 
+typedef struct {
+  int codigo;
+  char validar_tripulacaodata[11];
+  char hora[6];
+  char origem[100];
+  char destino[100];
+  int codigo_aviao;
+  int codigo_piloto;
+  int codigo_copiloto;
+  int codigo_comissario;
+  int status;
+  float tarifa;
+} Voo;
+
+int validar_tripulacao(int codigo_piloto, int codigo_copiloto) {
+  FILE *arquivo = fopen("tripulacao.dat", "rb");
+  if (arquivo == NULL) {
+    return 0;
+  }
+
+  int piloto_encontrado = 0, copiloto_encontrado = 0;
+  Tripulacao tripulacao;
+
+  while (fread(&tripulacao, sizeof(Tripulacao), 1, arquivo)) {
+    if (tripulacao.codigo == codigo_piloto &&
+        strcmp(tripulacao.cargo, "Piloto") == 0) {
+      piloto_encontrado = 1;
+    }
+    if (tripulacao.codigo == codigo_copiloto &&
+        strcmp(tripulacao.cargo, "Copiloto") == 0) {
+      copiloto_encontrado = 1;
+    }
+  }
+
+  fclose(arquivo);
+  return piloto_encontrado && copiloto_encontrado;
+}
+
+void salvar_voo(Voo *voo) {
+  FILE *arquivo = fopen("voos.dat", "ab");
+  if (arquivo == NULL) {
+    printf("Erro ao abrir o arquivo de voos.\n");
+    return;
+  }
+  fwrite(voo, sizeof(Voo), 1, arquivo);
+  fclose(arquivo);
+  printf("Voo salvo com sucesso!\n");
+}
+
+
 void salvar_passageiro(Passageiro *passageiro) {
   FILE *arquivo = fopen("passageiros.dat", "ab");
   if (arquivo == NULL) {
@@ -92,7 +142,52 @@ void cadastrar_tripulacao() {
 }
 
 void cadastrar_voo() {
-    printf("cadastrar_voo\n");
+  Voo voo;
+
+  printf("Digite o código do voo: ");
+  scanf("%d", &voo.codigo);
+  getchar();
+
+  printf("Digite a data do voo (DD/MM/AAAA): ");
+  fgets(voo.data, sizeof(voo.data), stdin);
+  voo.data[strcspn(voo.data, "\n")] = 0;
+
+  printf("Digite a hora do voo (HH:MM): ");
+  fgets(voo.hora, sizeof(voo.hora), stdin);
+  voo.hora[strcspn(voo.hora, "\n")] = 0;
+
+  printf("Digite a origem do voo: ");
+  fgets(voo.origem, sizeof(voo.origem), stdin);
+  voo.origem[strcspn(voo.origem, "\n")] = 0;
+
+  printf("Digite o destino do voo: ");
+  fgets(voo.destino, sizeof(voo.destino), stdin);
+  voo.destino[strcspn(voo.destino, "\n")] = 0;
+
+  printf("Digite o código do avião: ");
+  scanf("%d", &voo.codigo_aviao);
+
+  printf("Digite o código do piloto: ");
+  scanf("%d", &voo.codigo_piloto);
+
+  printf("Digite o código do copiloto: ");
+  scanf("%d", &voo.codigo_copiloto);
+
+  printf("Digite o código do comissário: ");
+  scanf("%d", &voo.codigo_comissario);
+
+  printf("Digite a tarifa do voo: ");
+  scanf("%f", &voo.tarifa);
+
+  if (validar_tripulacao(voo.codigo_piloto, voo.codigo_copiloto)) {
+    voo.status = 1;
+    printf("Voo marcado como ativo.\n");
+  } else {
+    voo.status = 0;
+    printf("Erro: Piloto ou copiloto inválidos. Voo marcado como inativo.\n");
+  }
+
+  salvar_voo(&voo);
 }
 
 void cadastrar_assento() {
