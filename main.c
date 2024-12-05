@@ -1,7 +1,49 @@
 #include <stdio.h>
 
+typedef struct {
+  int codigo;
+  char nome[100];
+  char endereco[200];
+  char telefone[20];
+  int fidelidade;
+  int pontos_fidelidade;
+} Passageiro;
+
+void salvar_passageiro(Passageiro *passageiro) {
+  FILE *arquivo = fopen("passageiros.dat", "ab");
+  if (arquivo == NULL) {
+    printf("Erro ao abrir o arquivo de passageiros.\n");
+    return;
+  }
+  fwrite(passageiro, sizeof(Passageiro), 1, arquivo);
+  fclose(arquivo);
+  printf("Passageiro salvo com sucesso!\n");
+}
+
 void cadastrar_passageiro() {
-    printf("cadastrar_passageiro\n");
+  Passageiro passageiro;
+
+  printf("Digite o código do passageiro: ");
+  scanf("%d", &passageiro.codigo);
+  getchar();
+
+  printf("Digite o nome do passageiro: ");
+  fgets(passageiro.nome, sizeof(passageiro.nome), stdin);
+  passageiro.nome[strcspn(passageiro.nome, "\n")] = 0;
+
+  printf("Digite o endereço do passageiro: ");
+  fgets(passageiro.endereco, sizeof(passageiro.endereco), stdin);
+  passageiro.endereco[strcspn(passageiro.endereco, "\n")] = 0;
+
+  printf("Digite o telefone do passageiro: ");
+  fgets(passageiro.telefone, sizeof(passageiro.telefone), stdin);
+  passageiro.telefone[strcspn(passageiro.telefone, "\n")] = 0;
+
+  printf("Passageiro é fidelidade? (1 para sim, 0 para não): ");
+  scanf("%d", &passageiro.fidelidade);
+  passageiro.pontos_fidelidade = 0;
+
+  salvar_passageiro(&passageiro);
 }
 
 void cadastrar_tripulacao() {
