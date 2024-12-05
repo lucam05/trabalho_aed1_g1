@@ -19,7 +19,7 @@ typedef struct {
 
 typedef struct {
   int codigo;
-  char validar_tripulacaodata[11];
+  char data[11];
   char hora[6];
   char origem[100];
   char destino[100];
@@ -30,6 +30,12 @@ typedef struct {
   int status;
   float tarifa;
 } Voo;
+
+typedef struct {
+  int numero;
+  int codigo_voo;
+  int status;
+} Assento;
 
 int validar_tripulacao(int codigo_piloto, int codigo_copiloto) {
   FILE *arquivo = fopen("tripulacao.dat", "rb");
@@ -66,6 +72,16 @@ void salvar_voo(Voo *voo) {
   printf("Voo salvo com sucesso!\n");
 }
 
+void salvar_assento(Assento *assento) {
+  FILE *arquivo = fopen("assentos.dat", "ab");
+  if (arquivo == NULL) {
+    printf("Erro ao abrir o arquivo de assentos.\n");
+    return;
+  }
+  fwrite(assento, sizeof(Assento), 1, arquivo);
+  fclose(arquivo);
+  printf("Assento salvo com sucesso!\n");
+}
 
 void salvar_passageiro(Passageiro *passageiro) {
   FILE *arquivo = fopen("passageiros.dat", "ab");
@@ -191,7 +207,19 @@ void cadastrar_voo() {
 }
 
 void cadastrar_assento() {
-    printf("cadastrar_assento\n");
+  Assento assento;
+  printf("Digite o código do voo para os assentos: ");
+  scanf("%d", &assento.codigo_voo);
+
+  printf("Digite o número do assento: ");
+  scanf("%d", &assento.numero);
+
+  printf("Digite o status do assento Ocupado - 1 / Livre - 0:");
+  scanf("%d", &assento.status);
+
+  assento.status = 0;
+
+  salvar_assento(&assento);
 }
 
 void reservar_assento() {
