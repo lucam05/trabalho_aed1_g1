@@ -9,6 +9,14 @@ typedef struct {
   int pontos_fidelidade;
 } Passageiro;
 
+typedef struct {
+  int codigo;
+  char nome[100];
+  char telefone[20];
+  char cargo[50];
+  int experiencia;
+} Tripulacao;
+
 void salvar_passageiro(Passageiro *passageiro) {
   FILE *arquivo = fopen("passageiros.dat", "ab");
   if (arquivo == NULL) {
@@ -18,6 +26,17 @@ void salvar_passageiro(Passageiro *passageiro) {
   fwrite(passageiro, sizeof(Passageiro), 1, arquivo);
   fclose(arquivo);
   printf("Passageiro salvo com sucesso!\n");
+}
+
+void salvar_tripulacao(Tripulacao *tripulacao) {
+  FILE *arquivo = fopen("tripulacao.dat", "ab");
+  if (arquivo == NULL) {
+    printf("Erro ao abrir o arquivo de tripulação.\n");
+    return;
+  }
+  fwrite(tripulacao, sizeof(Tripulacao), 1, arquivo);
+  fclose(arquivo);
+  printf("Tripulação salva com sucesso!\n");
 }
 
 void cadastrar_passageiro() {
@@ -47,7 +66,29 @@ void cadastrar_passageiro() {
 }
 
 void cadastrar_tripulacao() {
-    printf("cadastrar_tripulacao\n");
+  Tripulacao tripulacao;
+
+  printf("Digite o código da tripulação: ");
+  scanf("%d", &tripulacao.codigo);
+  getchar();
+
+  printf("Digite o nome da tripulação: ");
+  fgets(tripulacao.nome, sizeof(tripulacao.nome), stdin);
+  tripulacao.nome[strcspn(tripulacao.nome, "\n")] = 0;
+
+  printf("Digite o telefone da tripulação: ");
+  fgets(tripulacao.telefone, sizeof(tripulacao.telefone), stdin);
+  tripulacao.telefone[strcspn(tripulacao.telefone, "\n")] = 0;
+
+  printf("Digite o cargo da tripulação (ex: Piloto, Copiloto, Comissário, "
+         "etc.): ");
+  fgets(tripulacao.cargo, sizeof(tripulacao.cargo), stdin);
+  tripulacao.cargo[strcspn(tripulacao.cargo, "\n")] = 0;
+
+  printf("Digite a experiência da tripulação (em anos): ");
+  scanf("%d", &tripulacao.experiencia);
+
+  salvar_tripulacao(&tripulacao);
 }
 
 void cadastrar_voo() {
