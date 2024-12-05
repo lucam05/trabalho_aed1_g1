@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 
 typedef struct {
   int codigo;
@@ -8,12 +9,6 @@ typedef struct {
   int fidelidade;
   int pontos_fidelidade;
 } Passageiro;
-
-typedef struct {
-  int codigo_voo;
-  int numero_assento;
-  int codigo_passageiro;
-} Reserva;
 
 typedef struct {
   int codigo;
@@ -43,6 +38,12 @@ typedef struct {
   int status;
 } Assento;
 
+typedef struct {
+  int codigo_voo;
+  int numero_assento;
+  int codigo_passageiro;
+} Reserva;
+
 int validar_tripulacao(int codigo_piloto, int codigo_copiloto) {
   FILE *arquivo = fopen("tripulacao.dat", "rb");
   if (arquivo == NULL) {
@@ -67,6 +68,222 @@ int validar_tripulacao(int codigo_piloto, int codigo_copiloto) {
   return piloto_encontrado && copiloto_encontrado;
 }
 
+int validar_passageiro(int codigo_passageiro) {
+  FILE *arquivo = fopen("passageiros.dat", "rb");
+  if (arquivo == NULL) {
+    return 0;
+  }
+
+  Passageiro passageiro;
+  while (fread(&passageiro, sizeof(Passageiro), 1, arquivo)) {
+    if (passageiro.codigo == codigo_passageiro) {
+      fclose(arquivo);
+      return 1;
+    }
+  }
+
+  fclose(arquivo);
+  return 0;
+}
+
+int assento_existe(int codigo_voo, int numero_assento) {
+  FILE *arquivo = fopen("assentos.dat", "rb");
+  if (arquivo == NULL) {
+    return 0;
+  }
+
+  Assento assento;
+  while (fread(&assento, sizeof(Assento), 1, arquivo)) {
+    if (assento.codigo_voo == codigo_voo && assento.numero == numero_assento) {
+      fclose(arquivo);
+      return 1;
+    }
+  }
+
+  fclose(arquivo);
+  return 0;
+}
+
+Assento *buscar_assento(int codigo_voo, int numero_assento) {
+  FILE *arquivo = fopen("assentos.dat", "rb");
+  if (arquivo == NULL) {
+    return NULL;
+  }
+
+  Assento assento;
+  while (fread(&assento, sizeof(Assento), 1, arquivo)) {
+    if (assento.codigo_voo == codigo_voo && assento.numero == numero_assento) {
+      fclose(arquivo);
+      Assento *found_assento = malloc(sizeof(Assento));
+      *found_assento = assento;
+      return found_assento;
+    }
+  }
+
+  fclose(arquivo);
+  return NULL;
+}
+
+Voo *buscar_voo(int codigo_voo) {
+  FILE *arquivo = fopen("assentos.dat", "rb");
+  if (arquivo == NULL) {
+    return NULL;
+  }
+
+  Voo voo;
+  while (fread(&voo, sizeof(Assento), 1, arquivo)) {
+    if (voo.codigo == codigo_voo) {
+      fclose(arquivo);
+      Voo *found_voo = malloc(sizeof(Voo));
+      *found_voo = voo;
+      return found_voo;
+    }
+  }
+
+  fclose(arquivo);
+  return NULL;
+}
+
+Tripulacao *buscar_tripulacao_por_codigo(int codigo_tripulacao) {
+  FILE *arquivo = fopen("tripulacao.dat", "rb");
+  if (arquivo == NULL) {
+    return NULL;
+  }
+  Tripulacao tripulacao;
+  while (fread(&tripulacao, sizeof(Tripulacao), 1, arquivo)) {
+    if (tripulacao.codigo == codigo_tripulacao) {
+      fclose(arquivo);
+      Tripulacao *found_tripulacao = malloc(sizeof(Tripulacao));
+      *found_tripulacao = tripulacao;
+      return found_tripulacao;
+    }
+  }
+
+  fclose(arquivo);
+  return NULL;
+}
+
+Tripulacao *buscar_tripulacao_por_nome(char *nome) {
+  FILE *arquivo = fopen("tripulacao.dat", "rb");
+
+  if (arquivo == NULL) {
+    return NULL;
+  }
+
+  Tripulacao tripulacao;
+  while (fread(&tripulacao, sizeof(Tripulacao), 1, arquivo)) {
+    if (strcmp(tripulacao.nome, nome) == 0) {
+      fclose(arquivo);
+      Tripulacao *found_tripulacao = malloc(sizeof(Tripulacao));
+      *found_tripulacao = tripulacao;
+      return found_tripulacao;
+    }
+  }
+
+  fclose(arquivo);
+  return NULL;
+}
+
+Passageiro *buscar_passageiro_por_codigo(int codigo_passageiro) {
+  FILE *arquivo = fopen("passageiros.dat", "rb");
+  if (arquivo == NULL) {
+    return NULL;
+  }
+  Passageiro passageiro;
+  while (fread(&passageiro, sizeof(Passageiro), 1, arquivo)) {
+    if (passageiro.codigo == codigo_passageiro) {
+      fclose(arquivo);
+      Passageiro *found_passageiro = malloc(sizeof(Passageiro));
+      *found_passageiro = passageiro;
+      return found_passageiro;
+    }
+  }
+
+  fclose(arquivo);
+  return NULL;
+}
+
+Passageiro *buscar_passageiro_por_nome(char *nome) {
+  FILE *arquivo = fopen("passageiros.dat", "rb");
+
+  if (arquivo == NULL) {
+    return NULL;
+  }
+
+  Passageiro passageiro;
+  while (fread(&passageiro, sizeof(Passageiro), 1, arquivo)) {
+    if (strcmp(passageiro.nome, nome) == 0) {
+      fclose(arquivo);
+      Passageiro *found_passageiro = malloc(sizeof(Passageiro));
+      *found_passageiro = passageiro;
+      return found_passageiro;
+    }
+  }
+
+  fclose(arquivo);
+  return NULL;
+}
+
+int reserva_existe(int codigo_voo, int numero_assento, int codigo_passageiro) {
+  FILE *arquivo = fopen("reservas.dat", "rb");
+  if (arquivo == NULL) {
+    return 0;
+  }
+
+  Reserva reserva;
+
+  while (fread(&reserva, sizeof(Reserva), 1, arquivo)) {
+    if (reserva.codigo_voo == codigo_voo &&
+        reserva.numero_assento == numero_assento &&
+        reserva.codigo_passageiro == codigo_passageiro) {
+      fclose(arquivo);
+      return 1;
+    }
+  }
+  return 0;
+}
+
+int voo_existe(int codigo_voo) {
+  FILE *arquivo = fopen("voos.dat", "rb");
+  if (arquivo == NULL) {
+    printf("Erro ao abrir o arquivo de voos para validação.\n");
+    return 0;
+  }
+
+  Voo voo;
+  while (fread(&voo, sizeof(Voo), 1, arquivo)) {
+    if (voo.codigo == codigo_voo) {
+      fclose(arquivo);
+      return 1;
+    }
+  }
+
+  fclose(arquivo);
+  return 0;
+}
+
+void salvar_passageiro(Passageiro *passageiro) {
+  FILE *arquivo = fopen("passageiros.dat", "ab");
+  if (arquivo == NULL) {
+    printf("Erro ao abrir o arquivo de passageiros.\n");
+    return;
+  }
+  fwrite(passageiro, sizeof(Passageiro), 1, arquivo);
+  fclose(arquivo);
+  printf("Passageiro salvo com sucesso!\n");
+}
+
+void salvar_tripulacao(Tripulacao *tripulacao) {
+  FILE *arquivo = fopen("tripulacao.dat", "ab");
+  if (arquivo == NULL) {
+    printf("Erro ao abrir o arquivo de tripulação.\n");
+    return;
+  }
+  fwrite(tripulacao, sizeof(Tripulacao), 1, arquivo);
+  fclose(arquivo);
+  printf("Tripulação salva com sucesso!\n");
+}
+
 void salvar_voo(Voo *voo) {
   FILE *arquivo = fopen("voos.dat", "ab");
   if (arquivo == NULL) {
@@ -89,17 +306,6 @@ void salvar_assento(Assento *assento) {
   printf("Assento salvo com sucesso!\n");
 }
 
-void salvar_passageiro(Passageiro *passageiro) {
-  FILE *arquivo = fopen("passageiros.dat", "ab");
-  if (arquivo == NULL) {
-    printf("Erro ao abrir o arquivo de passageiros.\n");
-    return;
-  }
-  fwrite(passageiro, sizeof(Passageiro), 1, arquivo);
-  fclose(arquivo);
-  printf("Passageiro salvo com sucesso!\n");
-}
-
 void salvar_reserva(Reserva *reserva) {
   FILE *arquivo = fopen("reservas.dat", "ab");
   if (arquivo == NULL) {
@@ -109,17 +315,6 @@ void salvar_reserva(Reserva *reserva) {
   fwrite(reserva, sizeof(Reserva), 1, arquivo);
   fclose(arquivo);
   printf("Reserva salva com sucesso!\n");
-}
-
-void salvar_tripulacao(Tripulacao *tripulacao) {
-  FILE *arquivo = fopen("tripulacao.dat", "ab");
-  if (arquivo == NULL) {
-    printf("Erro ao abrir o arquivo de tripulação.\n");
-    return;
-  }
-  fwrite(tripulacao, sizeof(Tripulacao), 1, arquivo);
-  fclose(arquivo);
-  printf("Tripulação salva com sucesso!\n");
 }
 
 void cadastrar_passageiro() {
@@ -239,42 +434,6 @@ void cadastrar_assento() {
   salvar_assento(&assento);
 }
 
-int validar_passageiro(int codigo_passageiro) {
-  FILE *arquivo = fopen("passageiros.dat", "rb");
-  if (arquivo == NULL) {
-    return 0;
-  }
-
-  Passageiro passageiro;
-  while (fread(&passageiro, sizeof(Passageiro), 1, arquivo)) {
-    if (passageiro.codigo == codigo_passageiro) {
-      fclose(arquivo);
-      return 1;
-    }
-  }
-
-  fclose(arquivo);
-  return 0;
-}
-
-int assento_existe(int codigo_voo, int numero_assento) {
-  FILE *arquivo = fopen("assentos.dat", "rb");
-  if (arquivo == NULL) {
-    return 0;
-  }
-
-  Assento assento;
-  while (fread(&assento, sizeof(Assento), 1, arquivo)) {
-    if (assento.codigo_voo == codigo_voo && assento.numero == numero_assento) {
-      fclose(arquivo);
-      return 1;
-    }
-  }
-
-  fclose(arquivo);
-  return 0;
-}
-
 void reservar_assento() {
   Reserva reserva;
   Assento assento;
@@ -337,64 +496,6 @@ void reservar_assento() {
   salvar_reserva(&reserva);
 }
 
-int reserva_existe(int codigo_voo, int numero_assento, int codigo_passageiro) {
-  FILE *arquivo = fopen("reservas.dat", "rb");
-  if (arquivo == NULL) {
-    return 0;
-  }
-
-  Reserva reserva;
-
-  while (fread(&reserva, sizeof(Reserva), 1, arquivo)) {
-    if (reserva.codigo_voo == codigo_voo &&
-        reserva.numero_assento == numero_assento &&
-        reserva.codigo_passageiro == codigo_passageiro) {
-      fclose(arquivo);
-      return 1;
-    }
-  }
-  return 0;
-}
-
-Assento *buscar_assento(int codigo_voo, int numero_assento) {
-  FILE *arquivo = fopen("assentos.dat", "rb");
-  if (arquivo == NULL) {
-    return NULL;
-  }
-
-  Assento assento;
-  while (fread(&assento, sizeof(Assento), 1, arquivo)) {
-    if (assento.codigo_voo == codigo_voo && assento.numero == numero_assento) {
-      fclose(arquivo);
-      Assento *found_assento = malloc(sizeof(Assento));
-      *found_assento = assento;
-      return found_assento;
-    }
-  }
-
-  fclose(arquivo);
-  return NULL;
-}
-
-Passageiro *buscar_passageiro_por_codigo(int codigo_passageiro) {
-  FILE *arquivo = fopen("passageiros.dat", "rb");
-  if (arquivo == NULL) {
-    return NULL;
-  }
-  Passageiro passageiro;
-  while (fread(&passageiro, sizeof(Passageiro), 1, arquivo)) {
-    if (passageiro.codigo == codigo_passageiro) {
-      fclose(arquivo);
-      Passageiro *found_passageiro = malloc(sizeof(Passageiro));
-      *found_passageiro = passageiro;
-      return found_passageiro;
-    }
-  }
-
-  fclose(arquivo);
-  return NULL;
-}
-
 void baixar_reserva() {
   int codigo_passageiro, codigo_voo, numero_assento;
 
@@ -438,86 +539,6 @@ void baixar_reserva() {
   free(passageiro);
 
   printf("Sucesso: Reserva baixada!\nValor: R$%d", voo->tarifa);
-}
-
-Tripulacao *buscar_tripulacao_por_codigo(int codigo_tripulacao) {
-  FILE *arquivo = fopen("tripulacao.dat", "rb");
-  if (arquivo == NULL) {
-    return NULL;
-  }
-  Tripulacao tripulacao;
-  while (fread(&tripulacao, sizeof(Tripulacao), 1, arquivo)) {
-    if (tripulacao.codigo == codigo_tripulacao) {
-      fclose(arquivo);
-      Tripulacao *found_tripulacao = malloc(sizeof(Tripulacao));
-      *found_tripulacao = tripulacao;
-      return found_tripulacao;
-    }
-  }
-
-  fclose(arquivo);
-  return NULL;
-}
-
-Tripulacao *buscar_tripulacao_por_nome(char *nome) {
-  FILE *arquivo = fopen("tripulacao.dat", "rb");
-
-  if (arquivo == NULL) {
-    return NULL;
-  }
-
-  Tripulacao tripulacao;
-  while (fread(&tripulacao, sizeof(Tripulacao), 1, arquivo)) {
-    if (strcmp(tripulacao.nome, nome) == 0) {
-      fclose(arquivo);
-      Tripulacao *found_tripulacao = malloc(sizeof(Tripulacao));
-      *found_tripulacao = tripulacao;
-      return found_tripulacao;
-    }
-  }
-
-  fclose(arquivo);
-  return NULL;
-}
-
-Passageiro *buscar_passageiro_por_codigo(int codigo_passageiro) {
-  FILE *arquivo = fopen("passageiros.dat", "rb");
-  if (arquivo == NULL) {
-    return NULL;
-  }
-  Passageiro passageiro;
-  while (fread(&passageiro, sizeof(Passageiro), 1, arquivo)) {
-    if (passageiro.codigo == codigo_passageiro) {
-      fclose(arquivo);
-      Passageiro *found_passageiro = malloc(sizeof(Passageiro));
-      *found_passageiro = passageiro;
-      return found_passageiro;
-    }
-  }
-
-  fclose(arquivo);
-  return NULL;
-}
-
-Passageiro *buscar_passageiro_por_nome(char *nome) {
-  FILE *arquivo = fopen("passageiros.dat", "rb");
-
-  if (arquivo == NULL) {
-    return NULL;
-  }
-
-  Passageiro passageiro;
-  while (fread(&passageiro, sizeof(Passageiro), 1, arquivo)) {
-    if (strcmp(passageiro.nome, nome) == 0) {
-      fclose(arquivo);
-      Passageiro *found_passageiro = malloc(sizeof(Passageiro));
-      *found_passageiro = passageiro;
-      return found_passageiro;
-    }
-  }
-
-  fclose(arquivo);
-  return NULL;
 }
 
 void pesquisa_tripulacao() {
@@ -654,54 +675,54 @@ void consultar_fidelidade() {
 }
 
 int main() {
-    int opcao;
+  int opcao;
 
-    do {
-        printf("\nMenu de Opções:\n");
-        printf("1. Cadastrar Passageiro\n");
-        printf("2. Cadastrar Tripulação\n");
-        printf("3. Cadastrar Voo\n");
-        printf("4. Cadastrar Assento\n");
-        printf("5. Reservar Assento\n");
-        printf("6. Baixar Reserva\n");
-        printf("7. Pesquisa\n");
-        printf("8. Consultar Fidelidade\n");
-        printf("9. Sair\n");
-        printf("Escolha uma opção: ");
-        scanf("%d", &opcao);
+  do {
+    printf("\nMenu de Opções:\n");
+    printf("1. Cadastrar Passageiro\n");
+    printf("2. Cadastrar Tripulação\n");
+    printf("3. Cadastrar Voo\n");
+    printf("4. Cadastrar Assento\n");
+    printf("5. Reservar Assento\n");
+    printf("6. Baixar Reserva\n");
+    printf("7. Pesquisa\n");
+    printf("8. Consultar Fidelidade\n");
+    printf("9. Sair\n");
+    printf("Escolha uma opção: ");
+    scanf("%d", &opcao);
 
-        switch (opcao) {
-        case 1:
-            cadastrar_passageiro();
-            break;
-        case 2:
-            cadastrar_tripulacao();
-            break;
-        case 3:
-            cadastrar_voo();
-            break;
-        case 4:
-            cadastrar_assento();
-            break;
-        case 5:
-            reservar_assento();
-            break;
-        case 6:
-            baixar_reserva();
-            break;
-        case 7:
-            pesquisa();
-            break;
-        case 8:
-            consultar_fidelidade();
-            break;
-        case 9:
-            printf("Saindo...\n");
-            break;
-        default:
-            printf("Opção inválida.\n");
-        }
-    } while (opcao != 9);
+    switch (opcao) {
+    case 1:
+      cadastrar_passageiro();
+      break;
+    case 2:
+      cadastrar_tripulacao();
+      break;
+    case 3:
+      cadastrar_voo();
+      break;
+    case 4:
+      cadastrar_assento();
+      break;
+    case 5:
+      reservar_assento();
+      break;
+    case 6:
+      baixar_reserva();
+      break;
+    case 7:
+      pesquisa();
+      break;
+    case 8:
+      consultar_fidelidade();
+      break;
+    case 9:
+      printf("Saindo...\n");
+      break;
+    default:
+      printf("Opção inválida.\n");
+    }
+  } while (opcao != 9);
 
-    return 0;
+  return 0;
 }
