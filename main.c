@@ -440,8 +440,201 @@ void baixar_reserva() {
   printf("Sucesso: Reserva baixada!\nValor: R$%d", voo->tarifa);
 }
 
+Tripulacao *buscar_tripulacao_por_codigo(int codigo_tripulacao) {
+  FILE *arquivo = fopen("tripulacao.dat", "rb");
+  if (arquivo == NULL) {
+    return NULL;
+  }
+  Tripulacao tripulacao;
+  while (fread(&tripulacao, sizeof(Tripulacao), 1, arquivo)) {
+    if (tripulacao.codigo == codigo_tripulacao) {
+      fclose(arquivo);
+      Tripulacao *found_tripulacao = malloc(sizeof(Tripulacao));
+      *found_tripulacao = tripulacao;
+      return found_tripulacao;
+    }
+  }
+
+  fclose(arquivo);
+  return NULL;
+}
+
+Tripulacao *buscar_tripulacao_por_nome(char *nome) {
+  FILE *arquivo = fopen("tripulacao.dat", "rb");
+
+  if (arquivo == NULL) {
+    return NULL;
+  }
+
+  Tripulacao tripulacao;
+  while (fread(&tripulacao, sizeof(Tripulacao), 1, arquivo)) {
+    if (strcmp(tripulacao.nome, nome) == 0) {
+      fclose(arquivo);
+      Tripulacao *found_tripulacao = malloc(sizeof(Tripulacao));
+      *found_tripulacao = tripulacao;
+      return found_tripulacao;
+    }
+  }
+
+  fclose(arquivo);
+  return NULL;
+}
+
+Passageiro *buscar_passageiro_por_codigo(int codigo_passageiro) {
+  FILE *arquivo = fopen("passageiros.dat", "rb");
+  if (arquivo == NULL) {
+    return NULL;
+  }
+  Passageiro passageiro;
+  while (fread(&passageiro, sizeof(Passageiro), 1, arquivo)) {
+    if (passageiro.codigo == codigo_passageiro) {
+      fclose(arquivo);
+      Passageiro *found_passageiro = malloc(sizeof(Passageiro));
+      *found_passageiro = passageiro;
+      return found_passageiro;
+    }
+  }
+
+  fclose(arquivo);
+  return NULL;
+}
+
+Passageiro *buscar_passageiro_por_nome(char *nome) {
+  FILE *arquivo = fopen("passageiros.dat", "rb");
+
+  if (arquivo == NULL) {
+    return NULL;
+  }
+
+  Passageiro passageiro;
+  while (fread(&passageiro, sizeof(Passageiro), 1, arquivo)) {
+    if (strcmp(passageiro.nome, nome) == 0) {
+      fclose(arquivo);
+      Passageiro *found_passageiro = malloc(sizeof(Passageiro));
+      *found_passageiro = passageiro;
+      return found_passageiro;
+    }
+  }
+
+  fclose(arquivo);
+  return NULL;
+}
+
+void pesquisa_tripulacao() {
+  int tipo_busca = 0; // 0 nome - 1 codigo
+
+  printf("Digite o tipo da busca -> 0 Por Nome - 1 Por codigo: ");
+  scanf("%d", &tipo_busca);
+
+  Tripulacao *tripulacao = NULL;
+
+  if (tipo_busca == 1) {
+    // por codigo
+    int codigo_tripulacao;
+    printf("Digite o codigo da tripulacao: ");
+    scanf("%d", &codigo_tripulacao);
+    tripulacao = buscar_tripulacao_por_codigo(codigo_tripulacao);
+  } else {
+    // por nome
+    char nome_tripulacao[100];
+    printf("Digite o nome da tripulação: ");
+    scanf(" %[^\n]s", nome_tripulacao);
+    tripulacao = buscar_tripulacao_por_nome(&nome_tripulacao);
+  }
+  if (tripulacao == NULL) {
+    printf("Erro: Tripulacao nao encontrada.\n");
+  } else {
+    printf("Tripulacao encontrada: \n");
+    printf("Codigo: %d\n", tripulacao->codigo);
+    printf("Nome: %s\n", tripulacao->nome);
+    printf("Telefone %s\n", tripulacao->telefone);
+    printf("Cargo: %s\n", tripulacao->cargo);
+    printf("Experiencia: %d\n", tripulacao->experiencia);
+  }
+}
+
+void pesquisar_reservas_passageiro(int codigo_passageiro) {
+  FILE *arquivo_reservas = fopen("reservas.dat", "rb");
+  if (arquivo_reservas == NULL) {
+    printf("Erro ao abrir o arquivo de reservas.\n");
+    return;
+  }
+
+  Reserva reserva;
+  int reservas_encontradas = 0;
+
+  while (fread(&reserva, sizeof(Reserva), 1, arquivo_reservas)) {
+    if (reserva.codigo_passageiro == codigo_passageiro) {
+      Voo *voo = buscar_voo(reserva.codigo_voo);
+      if (voo != NULL) {
+        printf("Reserva encontrada:\n");
+        printf("  Código do Voo: %d\n", reserva.codigo_voo);
+        printf("  Número do Assento: %d\n", reserva.numero_assento);
+        printf("  Data do Voo: %s\n", voo->data);
+        printf("  Hora do Voo: %s\n", voo->hora);
+        printf("  Origem: %s\n", voo->origem);
+        printf("  Destino: %s\n", voo->destino);
+        printf("  Tarifa: R$%.2f\n", voo->tarifa);
+        free(voo);
+        reservas_encontradas++;
+      }
+    }
+  }
+
+  fclose(arquivo_reservas);
+
+  if (reservas_encontradas == 0) {
+    printf("Nenhuma reserva encontrada para este passageiro.\n");
+  }
+}
+
+void pesquisa_passageiro() {
+  int tipo_busca = 0; // 0 nome - 1 codigo
+
+  printf("Digite o tipo da busca -> 0 Por Nome - 1 Por codigo: ");
+  scanf("%d", &tipo_busca);
+
+  Passageiro *passageiro = NULL;
+
+  if (tipo_busca == 1) {
+    // por codigo
+    int codigo_passageiro;
+    printf("Digite o codigo do passageiro: ");
+    scanf("%d", &codigo_passageiro);
+    passageiro = buscar_passageiro_por_codigo(codigo_passageiro);
+  } else {
+    // por nome
+    char nome_passageiro[100];
+    printf("Digite o nome do passageiro: ");
+    scanf(" %[^\n]s", nome_passageiro);
+    passageiro = buscar_passageiro_por_nome(&nome_passageiro);
+  }
+  if (passageiro == NULL) {
+    printf("Erro: Passageiro nao encontrado.\n");
+  } else {
+    printf("Passageiro encontrada: \n");
+    printf("Codigo: %d\n", passageiro->codigo);
+    printf("Nome: %s\n", passageiro->nome);
+    printf("Telefone %s\n", passageiro->telefone);
+    printf("Endereco: %s\n", passageiro->endereco);
+    printf("Pontos fidelidade: %d\n", passageiro->pontos_fidelidade);
+  }
+
+  pesquisar_reservas_passageiro(passageiro->codigo);
+}
+
 void pesquisa() {
-    printf("pesquisa\n");
+  int tipo_busca = 0; // 0 passageiro - 1 tripulacao
+
+  printf("Digite o tipo da busca -> 0 Passageiro - 1 Tripulacao: ");
+  scanf("%d", &tipo_busca);
+
+  if (tipo_busca == 1) {
+    // busca tripulacao
+    pesquisa_tripulacao();
+  } else {
+    pesquisa_passageiro();
+  }
 }
 
 void consultar_fidelidade() {
