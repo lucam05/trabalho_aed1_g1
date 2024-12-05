@@ -638,7 +638,19 @@ void pesquisa() {
 }
 
 void consultar_fidelidade() {
-    printf("consultar_fidelidade\n");
+  int codigo_passageiro;
+
+  printf("Digite o código do passageiro: ");
+  scanf("%d", &codigo_passageiro);
+
+  Passageiro *passageiro = buscar_passageiro_por_codigo(codigo_passageiro);
+  if (passageiro != NULL) {
+    printf("O passageiro %s possui %d pontos de fidelidade.\n",
+           passageiro->nome, passageiro->pontos_fidelidade);
+    free(passageiro);
+  } else {
+    printf("Erro: Passageiro não encontrado.\n");
+  }
 }
 
 int main() {
